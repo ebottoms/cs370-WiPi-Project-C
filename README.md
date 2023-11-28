@@ -1,1 +1,1 @@
-# cs370-WiPi-Project-C
+g++ -g -pthread Main.cpp -o Main
