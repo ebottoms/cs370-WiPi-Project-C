@@ -6,6 +6,9 @@
 #include <thread>
 #include <pthread.h>
 #include <chrono>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include "wifi.h"
 using namespace std;
 
 bool isRecording;
@@ -35,16 +38,35 @@ void run() {
         suffix += 1;
         logName = "log" + to_string(suffix) + ".csv";
     }
-
     ofstream logFile;
     logFile.open("logs/"+logName);
+    // child process for GPS, set GPS to write read pipe from gps
+    system("GPS");
+
+    this_thread::sleep_for(chrono::milliseconds(5000));
+
+    key_t key = 1111;
+    int shmid = shmget(key, (2 * sizeof(double)), 0666 | IPC_CREAT);
+    void* shmptr = shmat(shmid, nullptr, 0);
+
+    if(shmptr == (void*)-1){
+        printf("Main: Failed Connecting to Shared Memory.");
+        return;
+    }
+
 
     while (isRecording)
     {
+        double* shmdata = static_cast<double*>(shmptr);
+        
+
+        // read from gps pipe or shared memory
+        // run wifi scan method
+        
         string time = "Time";
-        string lattitude = "Lat";
-        string longitude = "Long";
-        string signalStrength = "sigStr";
+        string lattitude = to_string(shmdata[0]);
+        string longitude = to_string(shmdata[1]);
+        string signalStrength = readWiFi();
         logFile << time + "," + lattitude + "," + longitude + "," + signalStrength + "\n";
         this_thread::sleep_for(chrono::milliseconds(5000));
     }
