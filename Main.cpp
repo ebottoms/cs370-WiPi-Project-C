@@ -78,7 +78,7 @@ void run() {
         string longitude = to_string(shmdata[1]);
         string signalStrength = readWiFi();
         logFile << time + "," + lattitude + "," + longitude + "," + signalStrength + "\n";
-        this_thread::sleep_for(chrono::milliseconds(100));
+        this_thread::sleep_for(chrono::milliseconds(10));
     }
     
     logFile.close();

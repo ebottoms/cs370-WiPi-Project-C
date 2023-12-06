@@ -3,7 +3,7 @@ import numpy as np
 import folium
 from folium.plugins import HeatMap
 
-df = pd.read_csv('log2.csv', names=['Time', 'Latitude', 'Longitude', 'Signal_Strength'])
+df = pd.read_csv('log3.csv', names=['Time', 'Latitude', 'Longitude', 'Signal_Strength'])
 
 # sets no signal to -100 we should possibly delete these lines depending on how the mapping works
 df.loc[df['Signal_Strength'] == 'Signal level not found', 'Signal_Strength'] = -100
