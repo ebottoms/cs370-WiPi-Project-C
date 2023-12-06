@@ -41,15 +41,16 @@ void write(gps_data_t* data, void* shmptr){
     double* shmdata = static_cast<double*>(shmptr);
     shmdata[0] = data->fix.latitude;
     shmdata[1] = data->fix.longitude;
-
     return;
 
 }
 
 int main(void) {
     gpsmm gps_rec("localhost", DEFAULT_GPSD_PORT);
+
+
     key_t key = 1111;
-    int shmid = shmget(key, (2 * sizeof(double)), 0666 | IPC_CREAT);
+    int shmid = shmget(key, (2 * sizeof(string)), 0666 | IPC_CREAT);
     void* shmptr = shmat(shmid, nullptr, 0);
 
     if(shmptr == (void*)-1){
@@ -57,9 +58,9 @@ int main(void) {
         return -1;
     }
 
-    if (gps_rec.stream(WATCH_ENABLE|WATCH_JSON) == NULL) {
+    while (gps_rec.stream(WATCH_ENABLE|WATCH_JSON) == NULL) {
         printf("No GPSD running.\n");
-        return 1;
+        gpsmm gps_rec("localhost", DEFAULT_GPSD_PORT);
     }
 
     gps_data_t* data;
@@ -78,6 +79,7 @@ int main(void) {
             printf("Successful Capture of GPSD!\n");
             print(data);
             write(data, shmptr);
+
             printf("GPS: Wrote to Shared Memory.");
 
         }

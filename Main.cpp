@@ -13,6 +13,7 @@ using namespace std;
 
 bool isRecording;
 
+
 bool logExists(string logName) {
     DIR *dir;
     struct dirent *entry;
@@ -30,6 +31,15 @@ bool logExists(string logName) {
     return false;
 }
 
+void gpsThread(){
+    while (isRecording) {
+        system("./GPS");
+        this_thread::sleep_for(chrono::milliseconds(100));
+    }
+    
+
+}
+
 void run() {
     int suffix = 0;
     string logName = "log0.csv";
@@ -41,8 +51,9 @@ void run() {
     ofstream logFile;
     logFile.open("logs/"+logName);
     // child process for GPS, set GPS to write read pipe from gps
-    system("GPS");
-
+    
+    //thread gpsThreadHandle(gpsThread);
+    
     this_thread::sleep_for(chrono::milliseconds(5000));
 
     key_t key = 1111;
@@ -53,7 +64,6 @@ void run() {
         printf("Main: Failed Connecting to Shared Memory.");
         return;
     }
-
 
     while (isRecording)
     {
@@ -68,21 +78,42 @@ void run() {
         string longitude = to_string(shmdata[1]);
         string signalStrength = readWiFi();
         logFile << time + "," + lattitude + "," + longitude + "," + signalStrength + "\n";
-        this_thread::sleep_for(chrono::milliseconds(5000));
+        this_thread::sleep_for(chrono::milliseconds(500));
     }
     
     logFile.close();
+    
+    //gpsThreadHandle.join();
+
 }
 
 int main(int argc, char const *argv[])
 {
     isRecording = true;
-    thread recorder(run);
-    do {
-        cout << '\n' << "Press ENTER to stop recording...";
-    } while (cin.get() != '\n');
-    isRecording = false;
-    recorder.join();
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Child process
+        execlp("./GPS", "GPS", (char *) NULL);
+
+        // execlp only returns if there's an error
+        _exit(EXIT_FAILURE);
+    } else if (pid > 0) {
+        // Parent process
+        // ... your code ...
+        thread recorder(run);
+        do {
+            cout << '\n' << "Press ENTER to stop recording...";
+        } while (cin.get() != '\n');
+        isRecording = false;
+        recorder.join();
+
+        // When you need to stop the command
+        kill(pid, SIGKILL);
+
+        // Wait for child to terminate
+        waitpid(pid, NULL, 0);
+    }
     /*
     bool restart = false;
     while (true) {
