@@ -54,7 +54,7 @@ void run() {
     
     //thread gpsThreadHandle(gpsThread);
     
-    this_thread::sleep_for(chrono::milliseconds(5000));
+    this_thread::sleep_for(chrono::milliseconds(120000));
 
     key_t key = 1111;
     int shmid = shmget(key, (2 * sizeof(double)), 0666 | IPC_CREAT);
@@ -78,7 +78,7 @@ void run() {
         string longitude = to_string(shmdata[1]);
         string signalStrength = readWiFi();
         logFile << time + "," + lattitude + "," + longitude + "," + signalStrength + "\n";
-        this_thread::sleep_for(chrono::milliseconds(500));
+        this_thread::sleep_for(chrono::milliseconds(100));
     }
     
     logFile.close();
