@@ -8,7 +8,7 @@ using namespace std;
 string extractSignalLevel(const string& iwlistOutput) {
     size_t signalLevelPos = iwlistOutput.find("Signal level=");
     if (signalLevelPos == string::npos) {
-        return "Signal level not found";
+        return "-128";
     }
 
     size_t start = iwlistOutput.find('=', signalLevelPos) + 1;
@@ -41,7 +41,7 @@ string readWiFi() {
         dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout to pipe
         close(pipefd[1]); // Close write end of pipe
 
-        execl("/bin/sh", "sh", "-c", "sudo iwlist wlan0 scan | grep -A 5 -B 5 'ESSID:\"csu-net\"' | grep 'Signal level'", (char*) NULL);
+        execl("/bin/sh", "sh", "-c", "sudo iwlist wlan1 scan | grep -A 5 -B 5 'ESSID:\"csu-net\"' | grep 'Signal level'", (char*) NULL);
         perror("execl"); // execl only returns on error
         exit(EXIT_FAILURE);
     } else { // Parent process

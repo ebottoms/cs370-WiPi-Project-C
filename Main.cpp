@@ -73,12 +73,12 @@ void run() {
         // read from gps pipe or shared memory
         // run wifi scan method
         
-        string time = "Time";
+        
+        string signalStrength = readWiFi();
         string lattitude = to_string(shmdata[0]);
         string longitude = to_string(shmdata[1]);
-        string signalStrength = readWiFi();
-        logFile << time + "," + lattitude + "," + longitude + "," + signalStrength + "\n";
-        this_thread::sleep_for(chrono::milliseconds(10));
+        logFile << lattitude + "," + longitude + "," + signalStrength + "\n";
+        this_thread::sleep_for(chrono::milliseconds(200));
     }
     
     logFile.close();
