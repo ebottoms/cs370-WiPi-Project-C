@@ -52,7 +52,7 @@ string readWiFi() {
         perror("execl");
         exit(EXIT_FAILURE);
     } else { // Parent process
-        close(pipefd[1]); // Close unused write end
+        close(pipefd[1]); // Close write end
 
         string output;
         while (read(pipefd[0], &buf, 1) > 0) {

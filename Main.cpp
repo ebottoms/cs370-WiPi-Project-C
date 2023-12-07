@@ -51,7 +51,7 @@ void run() {
     int shmid = shmget(key, (2 * sizeof(double)), 0666 | IPC_CREAT);
     void* shmptr = shmat(shmid, nullptr, 0);
 
-    if(shmptr == (void*)-1){
+    if(shmptr == reinterpret_cast<void*> (-1)){
         printf("Main: Failed Connecting to Shared Memory.");
         return;
     }
@@ -75,7 +75,7 @@ void run() {
 
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
     isRecording = true;
     pid_t pid = fork();
