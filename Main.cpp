@@ -31,17 +31,10 @@ bool logExists(string logName) {
     return false;
 }
 
-void gpsThread(){
-    while (isRecording) {
-        system("./GPS");
-        this_thread::sleep_for(chrono::milliseconds(100));
-    }
-    
-
-}
 
 void run() {
     int suffix = 0;
+    // Opens csv log file
     string logName = "log0.csv";
     while (logExists(logName.c_str()) && suffix < 1000)
     {
@@ -50,12 +43,10 @@ void run() {
     }
     ofstream logFile;
     logFile.open("logs/"+logName);
-    // child process for GPS, set GPS to write read pipe from gps
-    
-    //thread gpsThreadHandle(gpsThread);
     
     this_thread::sleep_for(chrono::milliseconds(120000));
 
+    // Connects to shared memory
     key_t key = 1111;
     int shmid = shmget(key, (2 * sizeof(double)), 0666 | IPC_CREAT);
     void* shmptr = shmat(shmid, nullptr, 0);
@@ -69,21 +60,18 @@ void run() {
     {
         double* shmdata = static_cast<double*>(shmptr);
         
-
-        // read from gps pipe or shared memory
-        // run wifi scan method
-        
-        
+        // Run wifi scan method
         string signalStrength = readWiFi();
+        // Read from gps shared memory
         string lattitude = to_string(shmdata[0]);
         string longitude = to_string(shmdata[1]);
         logFile << lattitude + "," + longitude + "," + signalStrength + "\n";
-        this_thread::sleep_for(chrono::milliseconds(200));
+        this_thread::sleep_for(chrono::milliseconds(10));
     }
     
     logFile.close();
     
-    //gpsThreadHandle.join();
+    
 
 }
 
@@ -93,14 +81,11 @@ int main(int argc, char const *argv[])
     pid_t pid = fork();
 
     if (pid == 0) {
-        // Child process
+        // Child process running GPS process
         execlp("./GPS", "GPS", (char *) NULL);
-
-        // execlp only returns if there's an error
         _exit(EXIT_FAILURE);
     } else if (pid > 0) {
-        // Parent process
-        // ... your code ...
+        // Parent process running recording thread and I/O
         thread recorder(run);
         do {
             cout << '\n' << "Press ENTER to stop recording...";
@@ -108,25 +93,13 @@ int main(int argc, char const *argv[])
         isRecording = false;
         recorder.join();
 
-        // When you need to stop the command
+        // Stops process 
         kill(pid, SIGKILL);
 
-        // Wait for child to terminate
+        // Waiting child termination
         waitpid(pid, NULL, 0);
     }
-    /*
-    bool restart = false;
-    while (true) {
-        cout << '\n' << "Type 'R' to record again or anything else to exit.";
-        char input = cin.get();
-        if(cin.get() != 'R' || cin.get() != 'r') {
-            restart = true;
-            break;
-        } else if (cin.get() != '\n') {
-            break;
-        }
-    }
-    */
+    
     
     return 0;
 }

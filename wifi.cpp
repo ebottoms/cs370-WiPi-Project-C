@@ -5,10 +5,11 @@
 #include <iostream>
 using namespace std;
 
+// Extracts signal level from shell output
 string extractSignalLevel(const string& iwlistOutput) {
     size_t signalLevelPos = iwlistOutput.find("Signal level=");
     if (signalLevelPos == string::npos) {
-        return "-128";
+        return "Signal level not found";
     }
 
     size_t start = iwlistOutput.find('=', signalLevelPos) + 1;
@@ -21,6 +22,7 @@ string extractSignalLevel(const string& iwlistOutput) {
     return iwlistOutput.substr(start, end - start);
 }
 
+// Reads specified ESSID signal level
 string readWiFi() {
     int pipefd[2];
     pid_t pid;
@@ -36,13 +38,18 @@ string readWiFi() {
         exit(EXIT_FAILURE);
     }
 
-    if (pid == 0) { // Child process
-        close(pipefd[0]); // Close unused read end
-        dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout to pipe
-        close(pipefd[1]); // Close write end of pipe
+    // Child process
+    if (pid == 0) { 
+        // Close read end
+        close(pipefd[0]); 
+        // Directing stdout to pipe
+        dup2(pipefd[1], STDOUT_FILENO); 
+        // Close write end
+        close(pipefd[1]); 
 
+        // iwlist 
         execl("/bin/sh", "sh", "-c", "sudo iwlist wlan1 scan | grep -A 5 -B 5 'ESSID:\"csu-net\"' | grep 'Signal level'", (char*) NULL);
-        perror("execl"); // execl only returns on error
+        perror("execl");
         exit(EXIT_FAILURE);
     } else { // Parent process
         close(pipefd[1]); // Close unused write end

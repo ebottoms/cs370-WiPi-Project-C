@@ -20,22 +20,6 @@ void print(gps_data_t* newdata) {
     return;
 }
 
-gps_data_t* gpsRead(gpsmm gps_rec){ // deprecated
-    struct gps_data_t* data;
-    if ((data = gps_rec.read()) == NULL) {
-        printf("Error Reading From GPSD.\\n");
-    } else {
-        // Check if a valid fix is available
-        if (data->fix.mode >= MODE_2D) {
-            printf("Successful Capture of GPSD!\\n");
-            print(data);
-        } else {
-            printf("GPSD data not ready.\\n");
-        }
-    }
-    return data;
-
-}
 
 void write(gps_data_t* data, void* shmptr){
     double* shmdata = static_cast<double*>(shmptr);
@@ -66,7 +50,7 @@ int main(void) {
     gps_data_t* data;
     
 
-    for (;;) {
+    for(;;) {
         struct gps_data_t* data;
 
         if (!gps_rec.waiting(50000000))

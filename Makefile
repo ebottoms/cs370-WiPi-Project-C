@@ -1,16 +1,19 @@
-# C++ Makefile for HW5
-#
-# Replace the LastName-FirstName in the package section with
-# your actual first and last name.
+# Compiler
+CXX = g++
 
-CXX=g++
-CXXFLAGS=-Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Winit-self -Wshadow -Wlogical-op -Wcomment -Wctor-dtor-privacy -Wold-style-cast -D_GLIBCXX_DEBUG -fno-diagnostics-show-option
+# Flags
+CXXFLAGS = -pthread -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Winit-self -Wshadow -Wlogical-op -Wcomment -Wctor-dtor-privacy -Wold-style-cast -D_GLIBCXX_DEBUG -fno-diagnostics-show-option
+LDFLAGS = -lgps
 
-all: GPS.cc 
-	$(CXX) $(CXXFLAGS) -o GPS GPS.cc -lgps
-		
+# Targets
+all: GPS WiPi
+
+GPS: GPS.cpp
+	$(CXX) GPS.cpp -o GPS $(LDFLAGS)
+
+WiPi: Main.cpp wifi.cpp
+	$(CXX) -o WiPi Main.cpp wifi.cpp $(CXXFLAGS)
+
 clean:
-	rm -f GPS *.o *.zip
-	
-package:
-	zip GPS.zip README.txt Makefile GPS.cc
+	rm -f GPS WiPi
+
